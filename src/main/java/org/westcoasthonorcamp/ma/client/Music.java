@@ -1,4 +1,4 @@
-package org.westcoasthonorcamp.mac;
+package org.westcoasthonorcamp.ma.client;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

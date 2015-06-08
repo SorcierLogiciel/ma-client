@@ -1,4 +1,4 @@
-package org.westcoasthonorcamp.mac;
+package org.westcoasthonorcamp.ma.client;
 
 import java.io.File;
 import java.io.IOException;
