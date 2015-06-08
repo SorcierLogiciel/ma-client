@@ -17,6 +17,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
+import org.westcoasthonorcamp.ma.common.data.Music;
+
 public class ClientLoader
 {
 	
