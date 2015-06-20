@@ -156,7 +156,7 @@ public class Client
 		if(lastStatus == null || lastStatus.getMusicUpdateId() != newStatus.getMusicUpdateId())
 		{
 			
-			if(newStatus.isOverride() || newStatus.getMusicId() == 0)
+			if(newStatus.isOverride())
 			{
 				musicController.stop();
 			}
