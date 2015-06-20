@@ -20,10 +20,10 @@ public class PlayerController
 	
 	public void playResource(String resourceName)
 	{
-		playResource(resourceName, false, 0);
+		playResource(resourceName, false, 0, 0);
 	}
 	
-	public void playResource(String resourceName, boolean loop, int delay)
+	public void playResource(String resourceName, boolean loop, int delay, long startTime)
 	{
 		
 		try
@@ -31,7 +31,7 @@ public class PlayerController
 			
 			Path tempFile = File.createTempFile("mac-", "-" + resourceName).toPath();
 			Files.copy(getClass().getClassLoader().getResourceAsStream(resourceName), tempFile, StandardCopyOption.REPLACE_EXISTING);
-			play(tempFile, loop, delay);
+			play(tempFile, loop, delay, startTime);
 			
 		}
 		catch(IOException e)
@@ -43,13 +43,13 @@ public class PlayerController
 	
 	public void play(final Path location)
 	{
-		play(location, false, 0);
+		play(location, false, 0, 0);
 	}
 	
-	public synchronized void play(final Path location, final boolean loop, final int delay)
+	public synchronized void play(final Path location, final boolean loop, final int delay, final long startTime)
 	{
 		
-		if(location != null && (player == null || player.isComplete())) //Override
+		if(location != null && (player == null || player.isComplete()))
 		{
 			
 			if(player != null)
@@ -70,6 +70,10 @@ public class PlayerController
 						do
 						{
 							
+							while(startTime > System.currentTimeMillis())
+							{
+								Thread.sleep(10);
+							}
 							System.out.println(String.format("Started playing %s", location));
 							player = new Player(Files.newInputStream(location));
 							player.play();
