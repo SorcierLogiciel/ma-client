@@ -10,7 +10,9 @@ import java.net.MulticastSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +31,14 @@ public class Client
 	
 	public static void main(String[] args)
 	{
+		
+		System.out.println(new Date());
+		System.out.println("Starting Music Alarm Client");
 		new Client("225.0.0.1", 5000).run();
+		
 	}
 	
+	private final Map<String, Path> resourceMap = new HashMap<>();
 	private final Map<Integer, Music> musicMap = new HashMap<>();
 	private final PlayerController musicController = new PlayerController();
 	private final PlayerController soundController = new PlayerController();
@@ -63,7 +70,30 @@ public class Client
 	public void run()
 	{
 		
-		soundController.playResource("listening.mp3", true, 500, System.currentTimeMillis());
+		soundController.play(getResourcePath("listening.mp3"), true, 500, System.currentTimeMillis());
+		
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
+			
+			@Override
+			public void run()
+			{				
+				deleteMusic();
+				for(Path p : resourceMap.values())
+				{
+					try
+					{
+						Files.deleteIfExists(p);
+					}
+					catch(IOException e)
+					{
+						//Ignored
+					}
+				}				
+			}
+			
+		});
+		
 		while(true)
 		{
 			
@@ -74,7 +104,7 @@ public class Client
 			catch(IOException | NotFoundException e)
 			{
 				soundController.stop();
-				soundController.playResource("listening.mp3", true, 500, System.currentTimeMillis());
+				soundController.play(getResourcePath("listening.mp3"), true, 500, System.currentTimeMillis());
 			}
 			catch(ClassNotFoundException e)
 			{
@@ -112,14 +142,14 @@ public class Client
 		{
 
 			soundController.stop();
-			soundController.playResource("loading.mp3", true, 500, System.currentTimeMillis());
+			soundController.play(getResourcePath("loading.mp3"), true, 500, System.currentTimeMillis());
 			if(webTarget == null)
 			{
 				webTarget = ClientBuilder.newClient().target(newStatus.getServerUrl());
 			}
 			loadMusic();
 			soundController.stop();
-			soundController.playResource("completed.mp3");
+			soundController.play(getResourcePath("completed.mp3"));
 			
 		}
 		
@@ -145,7 +175,7 @@ public class Client
 	private void loadMusic()
 	{
 		
-		musicMap.clear();
+		deleteMusic();
 		for(Music m : webTarget.path("music").request(MediaType.APPLICATION_XML).get(new GenericType<List<Music>>() {}))
 		{
 			
@@ -165,6 +195,47 @@ public class Client
 			}
 			
 		}
+		
+	}
+	
+	private void deleteMusic()
+	{
+		for(Music m : musicMap.values())
+		{
+			try
+			{
+				Files.deleteIfExists(Paths.get(m.getLocation()));
+			}
+			catch(IOException e)
+			{
+				//Ignored
+			}
+		}
+		musicMap.clear();
+	}
+	
+	private Path getResourcePath(String resourceName)
+	{
+		
+		Path resourcePath = resourceMap.get(resourceName);
+		if(resourcePath == null)
+		{
+			
+			try
+			{
+				
+				resourcePath = File.createTempFile("mac-", "-" + resourceName).toPath();
+				Files.copy(getClass().getClassLoader().getResourceAsStream(resourceName), resourcePath, StandardCopyOption.REPLACE_EXISTING);
+				resourceMap.put(resourceName, resourcePath);
+				
+			}
+			catch(IOException e)
+			{
+				System.out.println("Unable to load resource");
+			}
+			
+		}
+		return resourcePath;
 		
 	}
 	

@@ -1,10 +1,8 @@
 package org.westcoasthonorcamp.ma.client;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,29 +15,6 @@ public class PlayerController
 	
 	private ExecutorService playerExecutor = Executors.newSingleThreadExecutor();
 	private Player player;
-	
-	public void playResource(String resourceName)
-	{
-		playResource(resourceName, false, 0, 0);
-	}
-	
-	public void playResource(String resourceName, boolean loop, int delay, long startTime)
-	{
-		
-		try
-		{
-			
-			Path tempFile = File.createTempFile("mac-", "-" + resourceName).toPath();
-			Files.copy(getClass().getClassLoader().getResourceAsStream(resourceName), tempFile, StandardCopyOption.REPLACE_EXISTING);
-			play(tempFile, loop, delay, startTime);
-			
-		}
-		catch(IOException e)
-		{
-			System.out.println("Unable to play resource");
-		}
-		
-	}
 	
 	public void play(final Path location)
 	{
